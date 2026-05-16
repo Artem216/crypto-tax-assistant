@@ -1,0 +1,1 @@
+"""Etherscan wallet service package."""
