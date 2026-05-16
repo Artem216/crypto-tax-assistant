@@ -1,0 +1,12 @@
+services:
+  etherscan-wallet-service:
+    build:
+      context: ./services/etherscan-wallet-service
+    ports:
+      - "${APP_PORT:-8000}:${APP_PORT:-8000}"
+    environment:
+      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
+      APP_PORT: ${APP_PORT:-8000}
+      ETHERSCAN_TIMEOUT_SECONDS: ${ETHERSCAN_TIMEOUT_SECONDS:-10}
+      ETHERSCAN_RPS_LIMIT: ${ETHERSCAN_RPS_LIMIT:-3}
+      DEFAULT_CHAIN_ID: ${DEFAULT_CHAIN_ID:-1}
