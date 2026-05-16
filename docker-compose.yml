@@ -1,7 +1,32 @@
 services:
+  coingecko-rate-service:
+    build:
+      context: ./coingecko-rate-service
+    ports:
+      - "8001:8000"
+    environment:
+      APP_PORT: 8000
+      COINGECKO_API_TIER: ${COINGECKO_API_TIER:-public}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      COINGECKO_TIMEOUT_SECONDS: ${COINGECKO_TIMEOUT_SECONDS:-10}
+      COINGECKO_RPS_LIMIT: ${COINGECKO_RPS_LIMIT:-3}
+      COINGECKO_RETRY_ATTEMPTS: ${COINGECKO_RETRY_ATTEMPTS:-2}
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+services:
   etherscan-wallet-service:
     build:
-      context: ./services/etherscan-wallet-service
+      context: ./etherscan-wallet-service
     ports:
       - "${APP_PORT:-8000}:${APP_PORT:-8000}"
     environment:
