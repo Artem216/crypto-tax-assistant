@@ -1,0 +1,1 @@
+"""CoinGecko rate service package."""

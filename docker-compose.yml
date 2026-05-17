@@ -1,0 +1,48 @@
+services:
+  etherscan-wallet-service:
+    build:
+      context: ./etherscan-wallet-service
+    ports:
+      - "8000:8000"
+    environment:
+      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
+      APP_PORT: 8000
+      ETHERSCAN_TIMEOUT_SECONDS: ${ETHERSCAN_TIMEOUT_SECONDS:-10}
+      ETHERSCAN_RPS_LIMIT: ${ETHERSCAN_RPS_LIMIT:-3}
+      DEFAULT_CHAIN_ID: ${DEFAULT_CHAIN_ID:-1}
+
+  coingecko-rate-service:
+    build:
+      context: ./coingecko-rate-service
+    ports:
+      - "8001:8000"
+    environment:
+      APP_PORT: 8000
+      COINGECKO_API_TIER: ${COINGECKO_API_TIER:-public}
+      COINGECKO_API_KEY: ${COINGECKO_API_KEY:-}
+      COINGECKO_TIMEOUT_SECONDS: ${COINGECKO_TIMEOUT_SECONDS:-10}
+      COINGECKO_RPS_LIMIT: ${COINGECKO_RPS_LIMIT:-3}
+      COINGECKO_RETRY_ATTEMPTS: ${COINGECKO_RETRY_ATTEMPTS:-2}
+
+  ai-service:
+    build:
+      context: ./ai-service
+    ports:
+      - "8002:8000"
+    environment:
+      GROQ_API_KEY: ${GROQ_API_KEY}
+    depends_on:
+      - etherscan-wallet-service
+      - coingecko-rate-service
+
+  orchestrator:
+    build:
+      context: ./orchestrator
+    ports:
+      - "8003:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - etherscan-wallet-service
+      - coingecko-rate-service
+      - ai-service
