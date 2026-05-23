@@ -1,4 +1,17 @@
+      retries: 3
 services:
+  etherscan-wallet-service:
+    build:
+      context: ./etherscan-wallet-service
+    ports:
+      - "8000:8000"
+    environment:
+      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
+      APP_PORT: 8000
+      ETHERSCAN_TIMEOUT_SECONDS: ${ETHERSCAN_TIMEOUT_SECONDS:-10}
+      ETHERSCAN_RPS_LIMIT: ${ETHERSCAN_RPS_LIMIT:-3}
+      DEFAULT_CHAIN_ID: ${DEFAULT_CHAIN_ID:-1}
+
   coingecko-rate-service:
     build:
       context: ./coingecko-rate-service
@@ -12,56 +25,11 @@ services:
       COINGECKO_RPS_LIMIT: ${COINGECKO_RPS_LIMIT:-3}
       COINGECKO_RETRY_ATTEMPTS: ${COINGECKO_RETRY_ATTEMPTS:-2}
     healthcheck:
-      test:
-        [
-          "CMD",
-          "python",
-          "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')",
-        ]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
       interval: 30s
       timeout: 5s
-      retries: 3
       start_period: 10s
-
-  etherscan-wallet-service:
-    build:
-      context: ./etherscan-wallet-service
-    ports:
-      - "${APP_PORT:-8000}:${APP_PORT:-8000}"
-    environment:
-      ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY}
-      APP_PORT: ${APP_PORT:-8000}
-      ETHERSCAN_TIMEOUT_SECONDS: ${ETHERSCAN_TIMEOUT_SECONDS:-10}
-      ETHERSCAN_RPS_LIMIT: ${ETHERSCAN_RPS_LIMIT:-3}
-      DEFAULT_CHAIN_ID: ${DEFAULT_CHAIN_ID:-1}
 
   ai-service:
     build:
-      context: ./ai-service
-    environment:
-      GROQ_API_KEY: ${GROQ_API_KEY}
-
-  orchestrator:
-    build:
-      context: ./orchestrator
-    ports:
-      - "8080:8000"
-    environment:
-      ETHERSCAN_URL: http://etherscan-wallet-service:8000
-      COINGECKO_URL: http://coingecko-rate-service:8000
-      AI_URL: http://ai-service:8000
     depends_on:
-      - etherscan-wallet-service
-      - coingecko-rate-service
-      - ai-service
-
-  telegram-bot:
-    build:
-      context: ./telegram-bot
-    restart: unless-stopped
-    environment:
-      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
-      ORCHESTRATOR_URL: http://orchestrator:8000
-    depends_on:
-      - orchestrator

@@ -111,11 +111,29 @@ async def analyze_wallet(payload: AnalyzeRequest):
         report["estimated_tax_rub"] = correct_tax
         report["tax_rate_note"] = "Рассчитано по прогрессивной шкале НДФЛ РФ 2025"
 
+        # Выделяем спорные транзакции для проверки пользователем
+        requires_review = [
+            {
+                "tx_hash": tx.get("tx_hash"),
+                "category": tx.get("category"),
+                "confidence": tx.get("confidence"),
+                "reasoning": tx.get("reasoning"),
+                "eth_amount": tx.get("eth_amount", 0),
+                "value_rub": tx.get("value_rub", 0),
+            }
+            for tx in transactions
+            if tx.get("confidence", 1.0) < 0.75 or tx.get("category") == "UNKNOWN"
+        ]
+
+        requires_review_hashes = report.get("requires_review_hashes", [])
+
         return {
             "wallet_address": payload.wallet_address,
             "period": payload.period,
             "transactions_analyzed": len(transactions),
             "report": report,
+            "requires_review": requires_review_hashes,
+            "requires_review_count": len(requires_review_hashes),
         }
 
 
