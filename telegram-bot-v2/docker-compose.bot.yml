@@ -1,0 +1,13 @@
+# docker-compose.yml для Telegram-бота
+# Добавь этот сервис к общему docker-compose.yml проекта
+
+services:
+  telegram-bot:
+    build:
+      context: ./telegram-bot
+    restart: unless-stopped
+    environment:
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
+      ORCHESTRATOR_URL: http://orchestrator:8000
+    depends_on:
+      - orchestrator
