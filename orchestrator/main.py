@@ -44,7 +44,7 @@ def calculate_tax_rub(tax_base_rub: float) -> float:
 
 @app.post("/api/v1/analyze")
 async def analyze_wallet(payload: AnalyzeRequest):
-    async with httpx.AsyncClient(timeout=60.0) as client:
+    async with httpx.AsyncClient(timeout=300.0) as client:
 
         # Шаг 1 — тянем транзакции
         etherscan_resp = await client.get(
